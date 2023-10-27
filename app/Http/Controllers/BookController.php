@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class BookController extends Controller
@@ -43,20 +44,35 @@ class BookController extends Controller
         ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+
     public function create()
     {
-        //
+        return Inertia::render('AddBook');//pending to create page
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
-        //
+       $valid = Validator::make($request->all(),[
+            'title' =>'required|string|max:255',
+            'author' => 'required|string|',
+            'genre' => 'required|string|max:255',
+            'description' => 'required|string',
+            'isbn' => 'required|numeric',
+            'image' => 'required',
+            'published' => 'required',
+            'publisher' => 'required|string|max:255'
+       ]);
+        if($valid->fails())
+            return json_encode(["errors" =>$valid->errors()]);
+        else
+        {
+            Book::insert($request->all());
+            return json_encode([
+                "status_code" => 201,
+                "message" => "Book add successfully."
+            ]);
+        }
     }
 
     /**
@@ -74,7 +90,9 @@ class BookController extends Controller
      */
     public function edit(Book $book)
     {
-        //
+        return Inertia::render('Editbook', [
+            'book' => $book,
+        ]);//pending edit  page
     }
 
     /**
@@ -82,14 +100,35 @@ class BookController extends Controller
      */
     public function update(Request $request, Book $book)
     {
-        //
+        $valid = Validator::make($request->all(),[
+            'title' =>'required|string|max:255',
+            'author' => 'required|string|',
+            'genre' => 'required|string|max:255',
+            'description' => 'required|string',
+            'isbn' => 'required|numeric',
+            'image' => 'required',
+            'published' => 'required',
+            'publisher' => 'required|string|max:255'
+       ]);
+        if($valid->fails())
+            return json_encode(["errors" =>$valid->errors()]);
+        else
+        {
+            Book::where('id',$book->id)->update($request->all());
+            return json_encode([
+                "status_code" => 204,
+                "message" => "Book add successfully."
+            ]);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(Book $book)
     {
-        //
+        $book->delete();
+        return json_encode([
+            "status_code" => 204,
+            "message" => "Book deleted successfully."
+        ]);
     }
 }
